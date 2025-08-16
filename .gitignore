@@ -52,3 +52,28 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+### Özel Ignore Kuralları ###
+# Middlewares klasöründeki kötüsoz.txt
+**/Middlewares/kötüsoz.txt
+/Middlewares/kötüsoz.txt
+SehirAsistani.Api/Middlewares/kötüsoz.txt
+
+# Uygulama konfigürasyon dosyaları
+appsettings.json
+appsettings*.json
+SehirAsistani.Api/appsettings.json
+/appsettings.json
+
+# Environment dosyaları
+.env
+*.env
+*.env.local
+
+# IDE özel dosyaları (Visual Studio Code/Visual Studio/Rider)
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.iml

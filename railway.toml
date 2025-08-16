@@ -1,0 +1,8 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "./SehirAsistani.Api/Dockerfile"
+
+[deploy]
+startCommand = "/bin/sh -c \"dotnet SehirAsistani.Api.dll\""
+restartPolicyType = "always"
+healthcheckPath = "/health"
