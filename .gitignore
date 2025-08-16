@@ -58,6 +58,8 @@ nunit-*.xml
 **/Middlewares/kotusoz.txt
 /Middlewares/kotusoz.txt
 SehirAsistani.Api/Middlewares/kotusoz.txt
+kotusoz.txt
+/kotusoz.txt
 
 # Uygulama konfigürasyon dosyaları
 appsettings.json
