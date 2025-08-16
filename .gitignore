@@ -55,9 +55,9 @@ nunit-*.xml
 
 ### Özel Ignore Kuralları ###
 # Middlewares klasöründeki kötüsoz.txt
-**/Middlewares/kötüsoz.txt
-/Middlewares/kötüsoz.txt
-SehirAsistani.Api/Middlewares/kötüsoz.txt
+**/Middlewares/kotusoz.txt
+/Middlewares/kotusoz.txt
+SehirAsistani.Api/Middlewares/kotusoz.txt
 
 # Uygulama konfigürasyon dosyaları
 appsettings.json
