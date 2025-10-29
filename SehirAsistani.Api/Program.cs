@@ -9,27 +9,30 @@ using SehirAsistanim.Infrastructure.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Port Ayarı (Railway, Heroku vb. için)
+// 🌐 Port Ayarı (Railway, Heroku vb. için)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8888";
 builder.WebHost.UseUrls($"http://*:{port}");
 
-// HealthChecks
+// ✅ HealthChecks
 builder.Services.AddHealthChecks();
 
-#region 🔓 CORS
+#region 🔓 CORS (Frontend + Localhost izinli)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(
+            "https://sehir-asistanim-frontend.vercel.app", // Vercel frontend
+            "http://localhost:5173" // local geliştirme
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 #endregion
 
 #region 🛢️ PostgreSQL Connection
-
 string? databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
 
@@ -62,7 +65,6 @@ builder.Services.AddDbContext<SehirAsistaniDbContext>(options =>
         {
             npgsqlOptions.UseNetTopologySuite(); // Harita desteği
         }));
-
 #endregion
 
 #region 💉 Dependency Injection
@@ -127,15 +129,31 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-app.UseCors("AllowAll"); 
+// ⚙️ Preflight (OPTIONS) istekleri için hızlı 200 cevabı
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 200;
+        await context.Response.CompleteAsync();
+        return;
+    }
+    await next();
+});
+
+// 🌐 CORS aktif
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+// 🚫 Küfür Filtresi
 app.UseMiddleware<ProfanityFilterMiddleware>();
 
+// 🩺 Sağlık Kontrolü
 app.UseHealthChecks("/health");
 
+// 🧭 Controller yönlendirmeleri
 app.MapControllers();
 
 app.Run();
