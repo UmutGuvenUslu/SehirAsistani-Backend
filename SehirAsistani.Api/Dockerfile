@@ -31,7 +31,6 @@ WORKDIR /app
 # Publish edilen dosyaları kopyala
 COPY --from=publish /app/publish .
 
-# kotusoz.txt dosyasını da kopyala (middleware ile aynı klasör)
-COPY SehirAsistani.Api/Middlewares/kotusoz.txt ./Middlewares/kotusoz.txt
+
 
 ENTRYPOINT ["dotnet", "SehirAsistani.Api.dll"]
