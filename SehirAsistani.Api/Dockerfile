@@ -1,4 +1,4 @@
-# Build aşaması
+# ====== BUILD STAGE ======
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
@@ -28,9 +28,11 @@ RUN dotnet publish "SehirAsistani.Api.csproj" -c $BUILD_CONFIGURATION -o /app/pu
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
+# Railway otomatik PORT env
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
+EXPOSE 8888
+
 # Publish edilen dosyaları kopyala
 COPY --from=publish /app/publish .
-
-
 
 ENTRYPOINT ["dotnet", "SehirAsistani.Api.dll"]

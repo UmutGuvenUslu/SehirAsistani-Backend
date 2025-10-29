@@ -9,7 +9,7 @@ using SehirAsistanim.Infrastructure.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🌐 Port Ayarı (Railway, Render, Heroku vb. için)
+// 🌐 Port Ayarı (Railway, Heroku vb. için)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8888";
 builder.WebHost.UseUrls($"http://*:{port}");
 
@@ -62,7 +62,7 @@ builder.Services.AddDbContext<SehirAsistaniDbContext>(options =>
     options.UseNpgsql(connectionString, npgsqlOptions =>
     {
         npgsqlOptions.UseNetTopologySuite();
-        npgsqlOptions.EnableRetryOnFailure(); // 💡 Railway başlatma gecikmesi için
+        npgsqlOptions.EnableRetryOnFailure();
     })
 );
 
@@ -120,9 +120,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ⚠️ HTTPS yönlendirmesini kaldırdık — Railway içi HTTPS yok
-// app.UseHttpsRedirection();
-
+// ⚠️ HTTPS yönlendirmesi kaldırıldı (Railway içi)
 app.UseRouting();
 
 // ⚙️ Preflight (OPTIONS) istekleri için hızlı 200 cevabı
@@ -143,16 +141,13 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 🚫 Küfür Filtresi
-app.UseMiddleware<ProfanityFilterMiddleware>();
-
-// 🩺 Sağlık Kontrolü — Railway bu endpoint’e GET isteği atıyor
+// 🩺 Sağlık Kontrolü — Railway GET isteğine cevap verir
 app.MapGet("/health", () => Results.Ok("OK"));
 
 // 🧭 Controller yönlendirmeleri
 app.MapControllers();
 
-// 🪄 Log: Konsolda hangi portta dinlediğini görelim
+// 🪄 Port logu
 Console.WriteLine($"✅ Server is running on port {port}");
 
 app.Run();
