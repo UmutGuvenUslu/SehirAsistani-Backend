@@ -9,30 +9,29 @@ using SehirAsistanim.Infrastructure.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🌐 Port Ayarı (Railway, Heroku vb. için)
+// 🌐 Port Ayarı (Railway, Render, Heroku vb. için)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8888";
 builder.WebHost.UseUrls($"http://*:{port}");
 
 // ✅ HealthChecks
 builder.Services.AddHealthChecks();
 
-#region 🔓 CORS (Frontend + Localhost izinli)
+// 🌍 CORS Ayarları
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-            "https://sehir-asistanim-frontend.vercel.app", // Vercel frontend
-            "http://localhost:5173" // local geliştirme
+            "https://sehir-asistanim-frontend.vercel.app",
+            "http://localhost:5173"
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials();
     });
 });
-#endregion
 
-#region 🛢️ PostgreSQL Connection
+// 🛢️ PostgreSQL Connection
 string? databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
 
@@ -51,6 +50,7 @@ if (!string.IsNullOrEmpty(databaseUrl))
         SslMode = SslMode.Require,
         TrustServerCertificate = true,
     };
+
     connectionString = npgsqlBuilder.ToString();
 }
 else
@@ -59,15 +59,14 @@ else
 }
 
 builder.Services.AddDbContext<SehirAsistaniDbContext>(options =>
-    options.UseNpgsql(
-        connectionString,
-        npgsqlOptions =>
-        {
-            npgsqlOptions.UseNetTopologySuite(); // Harita desteği
-        }));
-#endregion
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.UseNetTopologySuite();
+        npgsqlOptions.EnableRetryOnFailure(); // 💡 Railway başlatma gecikmesi için
+    })
+);
 
-#region 💉 Dependency Injection
+// 💉 Dependency Injection
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IKullaniciService, KullaniciService>();
 builder.Services.AddScoped<ISikayetTuruService, SikayetTuruService>();
@@ -85,17 +84,15 @@ builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddHostedService<LogTemizlemeService>();
-#endregion
 
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 
-#region 📘 Swagger
+// 📘 Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-#endregion
 
-#region 🔐 JWT Authentication
+// 🔐 JWT Authentication
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
@@ -113,19 +110,18 @@ builder.Services.AddAuthentication("Bearer")
             )
         };
     });
-#endregion
 
 var app = builder.Build();
 
-#region 🚀 Middleware Pipeline
-
+// 🚀 Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// ⚠️ HTTPS yönlendirmesini kaldırdık — Railway içi HTTPS yok
+// app.UseHttpsRedirection();
 
 app.UseRouting();
 
@@ -150,12 +146,13 @@ app.UseAuthorization();
 // 🚫 Küfür Filtresi
 app.UseMiddleware<ProfanityFilterMiddleware>();
 
-// 🩺 Sağlık Kontrolü
-app.UseHealthChecks("/health");
+// 🩺 Sağlık Kontrolü — Railway bu endpoint’e GET isteği atıyor
+app.MapGet("/health", () => Results.Ok("OK"));
 
 // 🧭 Controller yönlendirmeleri
 app.MapControllers();
 
-app.Run();
+// 🪄 Log: Konsolda hangi portta dinlediğini görelim
+Console.WriteLine($"✅ Server is running on port {port}");
 
-#endregion
+app.Run();
