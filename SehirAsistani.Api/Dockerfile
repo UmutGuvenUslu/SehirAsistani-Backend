@@ -24,11 +24,11 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "SehirAsistani.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Final aşama (çalışma aşaması)
+# ====== RUNTIME STAGE ======
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Railway otomatik PORT env
+# Railway PORT otomatik
 ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 EXPOSE 8888
 

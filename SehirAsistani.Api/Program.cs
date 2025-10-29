@@ -9,10 +9,6 @@ using SehirAsistanim.Infrastructure.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🌐 Port Ayarı (Railway, Heroku vb. için)
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8888";
-builder.WebHost.UseUrls($"http://*:{port}");
-
 // ✅ HealthChecks
 builder.Services.AddHealthChecks();
 
@@ -120,7 +116,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ⚠️ HTTPS yönlendirmesi kaldırıldı (Railway içi)
+// ⚠️ HTTPS yönlendirmesi kaldırıldı (Railway için)
 app.UseRouting();
 
 // ⚙️ Preflight (OPTIONS) istekleri için hızlı 200 cevabı
@@ -141,13 +137,13 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 🩺 Sağlık Kontrolü — Railway GET isteğine cevap verir
+// 🩺 Sağlık Kontrolü
 app.MapGet("/health", () => Results.Ok("OK"));
 
 // 🧭 Controller yönlendirmeleri
 app.MapControllers();
 
 // 🪄 Port logu
-Console.WriteLine($"✅ Server is running on port {port}");
+Console.WriteLine($"✅ Server is running on port {Environment.GetEnvironmentVariable("PORT")}");
 
 app.Run();
